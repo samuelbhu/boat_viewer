@@ -1,0 +1,39 @@
+# This file is the entry point
+
+import argparse
+import sys
+import camera
+
+# handles 
+
+    # import necessary files and other modules
+    # process arguments for program
+    # call appropiate 
+
+def main(args):
+    # define main function
+    #   RULE: main function must have only:
+    # - argument parsing
+    # -  high level lines of code
+
+    # ARG IDEA LIST
+    # - debug mode
+    # - 
+    
+    one_image_routine(args)
+
+    
+def one_image_routine(args):
+    camera.get_image()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Python script boilerplate.")
+    parser.add_argument("-n", "--name", type=str, help="Your name")
+    args = parser.parse_args()
+
+    try:
+        main(args)
+    except KeyboardInterrupt:
+        print("\nProcess interrupted by user.")
+        sys.exit(1)
