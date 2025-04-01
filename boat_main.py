@@ -1,9 +1,10 @@
-#!/home/boat-watcher/boatwatcher/boat_viewer/venv_boat_viewer/bin/python3
+#!/opt/anaconda3/envs/boat_opencv_env/bin/python3
+## !/home/boat-watcher/boatwatcher/boat_viewer/venv_boat_viewer/bin/python3
 # This file is the entry point
 import argparse
 import sys
 import camera
-
+import yolov8n
 # handles 
 
     # import necessary files and other modules
@@ -23,6 +24,11 @@ def main(args):
         one_image_routine(args)
     # camera.get_image_all_apis()
     # camera.get_image_all_devices()
+
+    # is boat?
+    if(yolov8n.contains("keyboard", "computer-keyboard-1461918559T4Q.jpg")):
+        print("Keyboard Found")
+
 
     
 def one_image_routine(args):

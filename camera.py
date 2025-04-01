@@ -4,9 +4,10 @@ import glob
 import subprocess
 
 def get_image():
-    cam_port=0
+    cam_port=1
     small_img = True
-    cam = cv2.VideoCapture(cam_port,cv2.CAP_V4L2)
+    # cam = cv2.VideoCapture(cam_port,cv2.CAP_V4L2)
+    cam = cv2.VideoCapture(cam_port,cv2.CAP_ANY)
     
     max_width, max_height = get_max_resolution(cam)
     print("maxwidth:%d, height:%d"%(max_width,max_height))
