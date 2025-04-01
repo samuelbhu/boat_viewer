@@ -1,2 +1,4 @@
 __pycache__/*
 boat_project_env/*
+venv_boat_viewer/*
+venv_boat_viewer/lib/python3.11/site-packages/_distutils_hack/__init__.py

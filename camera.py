@@ -2,26 +2,110 @@ import cv2
 import os
 import glob
 import subprocess
+
 def get_image():
     cam_port=0
+    small_img = True
     cam = cv2.VideoCapture(cam_port,cv2.CAP_V4L2)
     
     max_width, max_height = get_max_resolution(cam)
     print("maxwidth:%d, height:%d"%(max_width,max_height))
-    cam.set(cv2.CAP_PROP_FRAME_WIDTH, 20)
-    cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 20)
+    if(small_img):
+        # save roughly a quarter size of image
+        cam.set(cv2.CAP_PROP_FRAME_WIDTH, 800)  # Set width
+        cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 600)  # Set height
+        # cam.set(cv2.CAP_PROP_AUTO_EXPOSURE, 3.0)
+        cam.set(cv2.CAP_PROP_BRIGHTNESS,30)
 
-    # cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)  # Set width
-    # cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  # Set height
+    else:
+        cam.set(cv2.CAP_PROP_FRAME_WIDTH, 3264)
+        cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 2448)
+        # cam.set(cv2.CAP_PROP_BRIGHTNESS, 1.0)
+        # cam.set(cv2.CAP_PROP_CONTRAST, 1.0)
+
+    set_test = True
+    if set_test:
+        set_item = (cv2.CAP_PROP_FOURCC, 2)
+
+        # cam.set(set_item[0],set_item[1])
+        print(cam.get(set_item[0]))
+
+
     
+
+    result, image = cam.read() 
+    result, image = cam.read() 
+    result, image = cam.read() 
+    result, image = cam.read() 
+    result, image = cam.read() 
+    result, image = cam.read() 
+    result, image = cam.read() 
     result, image = cam.read() 
 
 
 
     if result:
-        cv2.imwrite("captured_image.jpg", image)  # Save the captured image
+        cv2.imwrite("single_captured_image.jpg", image)  # Save the captured image
     else:
         print("Error: Failed to capture image.")
+
+def get_image_all_apis():
+    api_list = [
+    ("CAP_ANY",cv2.CAP_ANY),
+    ("CAP_VFW",cv2.CAP_VFW),
+    ("CAP_V4L",cv2.CAP_V4L),
+    ("CAP_V4L2",cv2.CAP_V4L2),
+    ("CAP_FIREWIRE",cv2.CAP_FIREWIRE),
+    ("CAP_FIREWARE",cv2.CAP_FIREWARE),
+    ("CAP_IEEE1394",cv2.CAP_IEEE1394),
+    ("CAP_DC1394",cv2.CAP_DC1394),
+    ("CAP_CMU1394",cv2.CAP_CMU1394),
+    ("CAP_QT",cv2.CAP_QT),
+    ("CAP_UNICAP",cv2.CAP_UNICAP),
+    ("CAP_DSHOW",cv2.CAP_DSHOW),
+    ("CAP_PVAPI",cv2.CAP_PVAPI),
+    ("CAP_OPENNI",cv2.CAP_OPENNI),
+    ("CAP_OPENNI_ASUS",cv2.CAP_OPENNI_ASUS),
+    ("CAP_ANDROID",cv2.CAP_ANDROID),
+    ("CAP_XIAPI",cv2.CAP_XIAPI),
+    ("CAP_AVFOUNDATION",cv2.CAP_AVFOUNDATION),
+    ("CAP_GIGANETIX",cv2.CAP_GIGANETIX),
+    ("CAP_MSMF",cv2.CAP_MSMF),
+    ("CAP_WINRT",cv2.CAP_WINRT),
+    ("CAP_INTELPERC",cv2.CAP_INTELPERC),
+    ("CAP_OPENNI2",cv2.CAP_OPENNI2),
+    ("CAP_OPENNI2_ASUS",cv2.CAP_OPENNI2_ASUS),
+    ("CAP_GPHOTO2",cv2.CAP_GPHOTO2),
+    ("CAP_GSTREAMER",cv2.CAP_GSTREAMER),
+    ("CAP_FFMPEG",cv2.CAP_FFMPEG),
+    ("CAP_IMAGES",cv2.CAP_IMAGES),
+    ("CAP_ARAVIS",cv2.CAP_ARAVIS),
+    ("CAP_OPENCV_MJPEG",cv2.CAP_OPENCV_MJPEG),
+    ("CAP_INTEL_MFX",cv2.CAP_INTEL_MFX),
+    ("CAP_XINE",cv2.CAP_XINE),
+    ]
+    for api in api_list:
+        cam_port=0
+        cam = cv2.VideoCapture(cam_port,api[1])
+        print("Api%s"%(api[0]))
+        max_width, max_height = get_max_resolution(cam)
+        print("maxwidth:%d, height:%d"%(max_width,max_height))
+        cam.set(cv2.CAP_PROP_FRAME_WIDTH, 3264)
+        cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 2448)
+
+        # cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)  # Set width
+        # cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  # Set height
+        
+        result, image = cam.read() 
+
+
+
+        if result:
+            cv2.imwrite("captured_image_%s.jpg"%(api[0]), image)  # Save the captured image
+        else:
+            print("Error: Failed to capture image.%s"%(api[0]))
+
+
 
 
 def get_max_resolution(cap):

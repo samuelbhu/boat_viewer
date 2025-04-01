@@ -19,8 +19,9 @@ def main(args):
     # ARG IDEA LIST
     # - debug mode
     # - 
-    
-    one_image_routine(args)
+    if args.one_image: 
+        one_image_routine(args)
+    # camera.get_image_all_apis()
     # camera.get_image_all_devices()
 
     
@@ -32,6 +33,7 @@ def one_image_routine(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Python script boilerplate.")
     parser.add_argument("-n", "--name", type=str, help="Your name")
+    parser.add_argument("-o", "--one_image", help="Capture One Image", action='store_true')
     args = parser.parse_args()
 
     try:
