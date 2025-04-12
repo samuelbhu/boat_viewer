@@ -1,4 +1,6 @@
 from ultralytics import YOLO
+import os
+
 
 
 # Load a COCO-pretrained YOLOv8n model
@@ -6,14 +8,28 @@ from ultralytics import YOLO
 
 def run_debug_train():
     model = YOLO("yolov8n.pt")
-    results = model("/Users/samuel/git/boat_viewer/sample_images/boat_image_example.jpg")
-    for result in results:
-        class_ids = result.boxes.cls.cpu().numpy().astype(int)
-        class_names = model.names 
-        detected_objects = [class_names[c] for c in class_ids]
-        unique_objects = list(set(detected_objects))
 
-        print("Objects detected:", unique_objects)
+    directory = "/Users/samuel/git/boat_viewer/datasets/open-images-v7/images/train"
+    counter = 0
+    MAX_IMAGES = 25
+    for filename in os.listdir(directory):
+        if counter > MAX_IMAGES:
+            break
+        full_path = os.path.join(directory, filename)
+        if os.path.isfile(full_path):
+            results = model(full_path)
+            for result in results:
+                class_ids = result.boxes.cls.cpu().numpy().astype(int)
+                class_names = model.names 
+                detected_objects = [class_names[c] for c in class_ids]
+                unique_objects = list(set(detected_objects))
+
+                print("Objects detected:", unique_objects)
+                counter+=1
+
+
+
+
 
 def validate_model():
     from ultralytics import YOLO
