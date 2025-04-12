@@ -5,11 +5,21 @@ import argparse
 import sys
 import camera
 import utils.boat_viewer_utils as utils
+import os
+from datetime import datetime
 # handles 
 
     # import necessary files and other modules
     # process arguments for program
     # call appropiate 
+
+# DATASET_PATH = "/Users/samuel/git/boat_viewer/datasets/open-images-v7/images/train"
+DATASET_PATH = "./datasets/open-images-v7/images/train"
+DATASET_TRUTHS_PATH = "./datasets/open-images-v7/labels/train"
+DATASET_YAML = "open_images_mini.yaml"
+MAX_IMAGES = 100 #len(os.listdir(DATASET_PATH))
+MODEL_NAME = "yolov8n-oiv7.pt"
+
 
 def main(args):
     # define main function
@@ -23,24 +33,76 @@ def main(args):
     # if args.one_image: 
         # one_image_routine(args)
 
+    if args.one_image:
+        camera.get_image()
+
+    elif args.capture_images:
+        capture_images()
+
+    elif args.boat_detector:
+        detect_boats()
     # camera.get_image_all_apis()
     # camera.get_image_all_devices()
-    model_name = "yolov8n-oiv7.pt"
-    predictions = utils.get_predictions(model_name)
+    elif args.model_testing:
+        model_testing_routine(args.save_report)
 
-    truths  = utils.get_truths("open_images_mini.yaml")
-    utils.compare_and_report(truths,predictions,52)
+    else:
+        print("Error, nothing to do")
+
+    print("DONE")
+
+def detect_boats():
+    pass
+    # TODO: this will be a daemon that runs on pi and does it ALL
+    # ---- take pictures, detect boats, and upload to AWS ----
+    
+
+def model_testing_routine(save_report):
+
+    predictions = utils.get_predictions(MODEL_NAME,DATASET_PATH,MAX_IMAGES)
+    truths  = utils.get_truths(DATASET_TRUTHS_PATH,MAX_IMAGES)
+    
+    report = utils.compare_and_report(truths,predictions,52,MAX_IMAGES)
+
+    print(report)
+
+    if save_report:
+        report_file = open("model_test_report.txt", 'a')
+        report_file.write("#### MODEL REPORT ####\n")
+        report_file.write(f"DATE:{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        report_file.write(f"MODEL_NAME:{MODEL_NAME}\n")
+        report_file.write(f"DATASET_PATH:{DATASET_PATH}\n")
+        report_file.write(f"DATASET_TRUTHS_PATH:{DATASET_TRUTHS_PATH}\n")
+        report_file.write(f"DATSET_YAML:{DATASET_YAML}\n")
+        report_file.write(f"MAX_IMAGES:{MAX_IMAGES}\n")
+        for key, value in report.items():
+            report_file.write(f"{key}:{value}\n")
+        report_file.write("#### END MODEL REPORT ####\n")
 
 
     
-def one_image_routine(args):
-    camera.get_image()
-    # camera.gphoto_capture()
+
+    
+def capture_images():
+    pass ## TODO: Put the correct image here
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Python script boilerplate.")
-    parser.add_argument("-n", "--name", type=str, help="Your name")
-    parser.add_argument("-o", "--one_image", help="Capture One Image", action='store_true')
+
+    group = parser.add_mutually_exclusive_group(required=True)
+    
+    # PRIMARY ROUTINES
+    group.add_argument("-o", "--one_image", help="Capture One Image", action='store_true')
+    group.add_argument("-i", "--capture_images", help="Capture a bunch of images", action='store_true')
+    group.add_argument("-m", "--model_testing", help="Measure Models on Datasets", action='store_true')
+    group.add_argument("-b", "--boat_detector", help="Run whole boat detector system", action='store_true')
+    
+    # ADDITIONAL PARAMETERS / SETTINGS
+
+    # parser.add_argument('--verbose', action='store_true', help='DEBUG: Enable verbose output')
+    parser.add_argument('--save_report', action='store_true', help='add report to model_test_report.txt')
+    
+
     args = parser.parse_args()
 
     try:

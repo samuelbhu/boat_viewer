@@ -7,3 +7,4 @@ datasets/*
 *.jpg
 runs/*
 *.pyc
+model_test_report.txt
