@@ -4,7 +4,7 @@
 import argparse
 import sys
 import camera
-import yolo_v8.yolov8n as yolov8n
+import utils.boat_viewer_utils as utils
 # handles 
 
     # import necessary files and other modules
@@ -26,8 +26,10 @@ def main(args):
     # camera.get_image_all_apis()
     # camera.get_image_all_devices()
     model_name = "yolov8n-oiv7.pt"
-    predictions = yolov8n.get_predictions(model_name)
-    print(predictions)
+    predictions = utils.get_predictions(model_name)
+
+    truths  = utils.get_truths("open_images_mini.yaml")
+    utils.compare_and_report(truths,predictions,52)
 
 
     
