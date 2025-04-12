@@ -4,7 +4,7 @@
 import argparse
 import sys
 import camera
-import yolov8n
+import yolo_v8.yolov8n as yolov8n
 # handles 
 
     # import necessary files and other modules
@@ -20,21 +20,20 @@ def main(args):
     # ARG IDEA LIST
     # - debug mode
     # - 
-    if args.one_image: 
-        one_image_routine(args)
+    # if args.one_image: 
+        # one_image_routine(args)
+
     # camera.get_image_all_apis()
     # camera.get_image_all_devices()
-
-    # is boat?
-    if(yolov8n.contains("keyboard", "computer-keyboard-1461918559T4Q.jpg")):
-        print("Keyboard Found")
+    model_name = "yolov8n-oiv7.pt"
+    predictions = yolov8n.get_predictions(model_name)
+    print(predictions)
 
 
     
 def one_image_routine(args):
     camera.get_image()
     # camera.gphoto_capture()
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Python script boilerplate.")
