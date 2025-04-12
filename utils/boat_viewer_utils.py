@@ -3,7 +3,8 @@ import os
 
 # Load a COCO-pretrained YOLOv8n model
 
-MAX_IMAGES = 300
+# Number of images to check on
+MAX_IMAGES = len(os.listdir("/Users/samuel/git/boat_viewer/datasets/open-images-v7/images/train"))
 
 def get_predictions(model_name):
     model = YOLO(model_name)
