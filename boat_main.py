@@ -15,22 +15,51 @@ from datetime import datetime
 
 # DATASET_PATH = "/Users/samuel/git/boat_viewer/datasets/open-images-v7/images/train"
 
-#### CONFIGURATION ####
+#### CONFIGURATIONS ####
 
+# ## open images v7 full validation set of images
+# DATASET_NAME = "open-images-v7"  #open_images_mini.yaml"
+# DATASET_FRACTION = 1
+# DATASET_SPLIT = "validation"
+# DATASET_SPLIT_SIZE = 41620  # open-images-v7 val split 41620
+# DATASET_PATH = f"./datasets/yolo/{DATASET_NAME}_{str(DATASET_FRACTION)}/images/{DATASET_SPLIT}/"
+# DATASET_TRUTHS_PATH = f"./datasets/yolo/{DATASET_NAME}_{str(DATASET_FRACTION)}/labels/{DATASET_SPLIT}/"
+# DATASET_BOAT_CLASS = 52
+
+# coco 2017 full validation set of images
+# DATASET_NAME = "coco-2017"  #open_images_mini.yaml"
+# DATASET_FRACTION = 1
+# DATASET_SPLIT = "validation"
+# DATASET_SPLIT_SIZE = 5000 # coco val is 5000
+# DATASET_PATH = f"./datasets/yolo/{DATASET_NAME}_{str(DATASET_FRACTION)}/images/{DATASET_SPLIT}/"
+# DATASET_TRUTHS_PATH = f"./datasets/yolo/{DATASET_NAME}_{str(DATASET_FRACTION)}/labels/{DATASET_SPLIT}/"
+# DATASET_BOAT_CLASS = 8 # 8 is boat
+
+
+##### CONFIGURATION SELECTED ######
+## open images v7 full validation set of images
 DATASET_NAME = "open-images-v7"  #open_images_mini.yaml"
-DATASET_FRACTION = .1
-DATASET_PATH = f"./datasets/yolo/{DATASET_NAME}_{str(DATASET_FRACTION)}/images/train/"
-DATASET_TRUTHS_PATH = f"./datasets/yolo/{DATASET_NAME}_{str(DATASET_FRACTION)}/labels/train/"
+DATASET_FRACTION = 1
+DATASET_SPLIT = "validation"
+DATASET_SPLIT_SIZE = 41620  # test split for open-images-v7 is 1743042
+DATASET_PATH = f"./datasets/yolo/{DATASET_NAME}_{str(DATASET_FRACTION)}/images/{DATASET_SPLIT}/"
+DATASET_TRUTHS_PATH = f"./datasets/yolo/{DATASET_NAME}_{str(DATASET_FRACTION)}/labels/{DATASET_SPLIT}/"
+DATASET_BOAT_CLASS = 52
+
+
 
 MAX_IMAGES = -1   # A value of -1 corresponds to full dataset
 if MAX_IMAGES == -1:
-    if os.path.isfile(DATASET_PATH):
+    if os.path.isdir(DATASET_PATH):
         MAX_IMAGES = len(os.listdir(DATASET_PATH))
     else:
         print("Warning: Dataset Not Created, setting default MAX IMAGES TO 100")
         MAX_IMAGES = 100
 
-MODEL_NAME = "yolov8n-oiv7.pt"
+# MODEL_NAME = "yolov8x.pt"
+# MODEL_NAME = "yolov8n-oiv7.pt"
+MODEL_NAME = "yolov8n.pt"
+
 CAPTURE_DATASET_TIME = 180  # minutes
 CAPTURE_INTERVAL= 8 # seconds
 
@@ -60,7 +89,7 @@ def main(args):
     # camera.get_image_all_devices()
 
     elif args.get_dataset:
-        utils.get_dataset(DATASET_NAME,DATASET_FRACTION)
+        utils.get_dataset(DATASET_NAME,DATASET_FRACTION,DATASET_SPLIT,DATASET_SPLIT_SIZE)
 
     elif args.model_testing:
         model_testing_routine(args.save_report)
@@ -81,7 +110,7 @@ def model_testing_routine(save_report):
     predictions = utils.get_predictions(MODEL_NAME,DATASET_PATH,MAX_IMAGES)
     truths  = utils.get_truths(DATASET_TRUTHS_PATH,MAX_IMAGES)
     
-    report = utils.compare_and_report(truths,predictions,52,MAX_IMAGES)
+    report = utils.compare_and_report(truths,predictions,DATASET_BOAT_CLASS,MAX_IMAGES)
 
     print(report)
 

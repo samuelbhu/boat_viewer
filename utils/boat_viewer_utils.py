@@ -103,7 +103,8 @@ def compare_and_report(truths,predictions,target_class_id,max_images):
 
     return report
 
-def get_dataset(dataset_name, fraction):
+def get_dataset(dataset_name, fraction, split, split_size):
+
 
     from ultralytics.utils import LOGGER, SETTINGS, Path, get_ubuntu_version, is_ubuntu
     from ultralytics.utils.checks import check_requirements, check_version
@@ -117,30 +118,27 @@ def get_dataset(dataset_name, fraction):
     fo.config.dataset_zoo_dir = f"datasets/fiftyone/{dataset_name}_{fraction}"
     # fraction = .01  # fraction of full dataset to use
     # LOGGER.warning("WARNING ⚠️ Open Images V7 dataset requires at least **561 GB of free space. Starting download...")
-    for split in "train", "validation":  # 1743042 train, 41620 val images
-        train = split == "train"
+    
+    # Load Open Images dataset
+    dataset = foz.load_zoo_dataset(
+        dataset_name,
+        split=split,
+        label_types=["detections"],
+        max_samples=round(split_size*fraction)
+    )
 
-        # Load Open Images dataset
-        dataset = foz.load_zoo_dataset(
-            dataset_name,
-            split=split,
-            label_types=["detections"],
-            max_samples=round((1743042 if train else 41620) * fraction),
+    classes = dataset.default_classes  # all classes
+        # classes = dataset.distinct('ground_truth.detections.label')  # only observed classes
+
+    # Export to YOLO format
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=UserWarning, module="fiftyone.utils.yolo")
+        dataset.export(
+            export_dir=f"./datasets/yolo/{dataset_name}_{fraction}",
+            dataset_type=fo.types.YOLOv5Dataset,
+            label_field="ground_truth",
+            # split="val" if split == "validation" else split, # trying to remove this if possible
+            split = split,
+            classes=classes,
+            # overwrite=train,
         )
-
-        # Define classes
-        if train:
-            classes = dataset.default_classes  # all classes
-            # classes = dataset.distinct('ground_truth.detections.label')  # only observed classes
-
-        # Export to YOLO format
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=UserWarning, module="fiftyone.utils.yolo")
-            dataset.export(
-                export_dir=f"./datasets/yolo/{dataset_name}_{fraction}",
-                dataset_type=fo.types.YOLOv5Dataset,
-                label_field="ground_truth",
-                split="val" if split == "validation" else split,
-                classes=classes,
-                overwrite=train,
-            )
