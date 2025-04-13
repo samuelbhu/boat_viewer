@@ -14,14 +14,24 @@ from datetime import datetime
     # call appropiate 
 
 # DATASET_PATH = "/Users/samuel/git/boat_viewer/datasets/open-images-v7/images/train"
-DATASET_PATH = "./datasets/open-images-v7/images/train"
-DATASET_TRUTHS_PATH = "./datasets/open-images-v7/labels/train"
-DATASET_YAML = "open_images_mini.yaml"
-MAX_IMAGES = 100 #len(os.listdir(DATASET_PATH))
+
+#### CONFIGURATION ####
+
+DATASET_NAME = "open-images-v7"  #open_images_mini.yaml"
+DATASET_FRACTION = .1
+DATASET_PATH = f"./datasets/yolo/{DATASET_NAME}_{str(DATASET_FRACTION)}/images/train/"
+DATASET_TRUTHS_PATH = f"./datasets/yolo/{DATASET_NAME}_{str(DATASET_FRACTION)}/labels/train/"
+
+MAX_IMAGES = -1   # A value of -1 corresponds to full dataset
+if MAX_IMAGES == -1:
+    if os.path.isfile(DATASET_PATH):
+        MAX_IMAGES = len(os.listdir(DATASET_PATH))
+    else:
+        print("Warning: Dataset Not Created, setting default MAX IMAGES TO 100")
+        MAX_IMAGES = 100
+
 MODEL_NAME = "yolov8n-oiv7.pt"
-
 CAPTURE_DATASET_TIME = 180  # minutes
-
 CAPTURE_INTERVAL= 8 # seconds
 
 def main(args):
@@ -48,6 +58,10 @@ def main(args):
         detect_boats()
     # camera.get_image_all_apis()
     # camera.get_image_all_devices()
+
+    elif args.get_dataset:
+        utils.get_dataset(DATASET_NAME,DATASET_FRACTION)
+
     elif args.model_testing:
         model_testing_routine(args.save_report)
 
@@ -78,7 +92,7 @@ def model_testing_routine(save_report):
         report_file.write(f"MODEL_NAME:{MODEL_NAME}\n")
         report_file.write(f"DATASET_PATH:{DATASET_PATH}\n")
         report_file.write(f"DATASET_TRUTHS_PATH:{DATASET_TRUTHS_PATH}\n")
-        report_file.write(f"DATSET_YAML:{DATASET_YAML}\n")
+        report_file.write(f"DATASET_NAME:{DATASET_NAME}\n")
         report_file.write(f"MAX_IMAGES:{MAX_IMAGES}\n")
         for key, value in report.items():
             report_file.write(f"{key}:{value}\n")
@@ -102,6 +116,7 @@ if __name__ == "__main__":
     group.add_argument("-i", "--capture_images", help="Capture a bunch of images", action='store_true')
     group.add_argument("-m", "--model_testing", help="Measure Models on Datasets", action='store_true')
     group.add_argument("-b", "--boat_detector", help="Run whole boat detector system", action='store_true')
+    group.add_argument("-d", "--get_dataset", help="Acquire the dataset", action='store_true')
     
     # ADDITIONAL PARAMETERS / SETTINGS
 
