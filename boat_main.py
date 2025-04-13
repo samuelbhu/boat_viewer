@@ -37,14 +37,13 @@ from datetime import datetime
 
 
 ##### CONFIGURATION SELECTED ######
-## open images v7 full validation set of images
-DATASET_NAME = "open-images-v7"  #open_images_mini.yaml"
+DATASET_NAME = "coco-2017"  #open_images_mini.yaml"
 DATASET_FRACTION = 1
 DATASET_SPLIT = "validation"
-DATASET_SPLIT_SIZE = 41620  # test split for open-images-v7 is 1743042
+DATASET_SPLIT_SIZE = 5000 # coco val is 5000
 DATASET_PATH = f"./datasets/yolo/{DATASET_NAME}_{str(DATASET_FRACTION)}/images/{DATASET_SPLIT}/"
 DATASET_TRUTHS_PATH = f"./datasets/yolo/{DATASET_NAME}_{str(DATASET_FRACTION)}/labels/{DATASET_SPLIT}/"
-DATASET_BOAT_CLASS = 52
+DATASET_BOAT_CLASS = 8 # 8 is boat
 
 
 
@@ -63,6 +62,10 @@ MODEL_NAME = "yolov8n.pt"
 CAPTURE_DATASET_TIME = 180  # minutes
 CAPTURE_INTERVAL= 8 # seconds
 
+CAPTURE_BOAT_TIME = .5 #minutes
+CAPTURE_BOAT_INTERVAL= 5 # seconds
+
+
 def main(args):
     # define main function
     #   RULE: main function must have only:
@@ -77,14 +80,15 @@ def main(args):
 
     if args.one_image:
         print(f"PRE CAPTURE TIME:{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}")
-        camera.get_image()
+        camera.get_image(image_size="FULL")
         print(f"POST CAPTURE TIME:{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}")
 
     elif args.capture_images:
         capture_images()
 
     elif args.boat_detector:
-        detect_boats()
+        while(1):
+            detect_boats()
     # camera.get_image_all_apis()
     # camera.get_image_all_devices()
 
@@ -94,15 +98,24 @@ def main(args):
     elif args.model_testing:
         model_testing_routine(args.save_report)
 
+    elif args.compress_dataset:
+        camera.process_images_routine("./datasets/freeland_180_min_2025_04_12__17_06","datasets/freeland_180_min_2025_04_12__17_06_compressed")
+
+
     else:
         print("Error, nothing to do")
 
     print("DONE")
 
 def detect_boats():
-    pass
+    # pass
     # TODO: this will be a daemon that runs on pi and does it ALL
     # ---- take pictures, detect boats, and upload to AWS ----
+    camera.get_image(image_size="MEDIUM",temp_image=True)
+    boat_detected = utils.check_for_boat(MODEL_NAME, "temp_image.jpg",DATASET_BOAT_CLASS)
+    if boat_detected:
+        print("DETECTED BOAT!!")
+        camera.get_many_images(CAPTURE_BOAT_TIME,f"./saved_boats/freeland_{datetime.today().strftime('%Y_%m_%d')}/",CAPTURE_BOAT_INTERVAL)
     
 
 def model_testing_routine(save_report):
@@ -146,6 +159,7 @@ if __name__ == "__main__":
     group.add_argument("-m", "--model_testing", help="Measure Models on Datasets", action='store_true')
     group.add_argument("-b", "--boat_detector", help="Run whole boat detector system", action='store_true')
     group.add_argument("-d", "--get_dataset", help="Acquire the dataset", action='store_true')
+    group.add_argument("-c", "--compress_dataset", help="Process Images to 640x640 for YOLO", action='store_true')
     
     # ADDITIONAL PARAMETERS / SETTINGS
 

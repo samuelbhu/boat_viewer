@@ -6,24 +6,24 @@ import time
 from datetime import datetime,timedelta
 
 WARMUP_FRAMES=3
-IMAGE_SIZE = "FULL" # SMALL,MEDIUM,FULL
 
-def get_image(folder="."):
+def get_image(folder=".",image_size="FULL",temp_image=False):
 
 
     cam_port=0
 
     cam = cv2.VideoCapture(cam_port,cv2.CAP_ANY)
-    if(IMAGE_SIZE=="SMALL"):
+    if(image_size=="SMALL"):
         # save small image
         cam.set(cv2.CAP_PROP_FRAME_WIDTH, 800)  
         cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 600) 
-    elif(IMAGE_SIZE=="MEDIUM"): # 
+        cam.set(cv2.CAP_PROP_BRIGHTNESS,35)
+    elif(image_size=="MEDIUM"): # 
         cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1600)  
         cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1200) 
-        cam.set(cv2.CAP_PROP_BRIGHTNESS,35)
+        cam.set(cv2.CAP_PROP_BRIGHTNESS,55)
 
-    elif(IMAGE_SIZE=="FULL"):
+    elif(image_size=="FULL"):
         cam.set(cv2.CAP_PROP_FRAME_WIDTH, 3264)
         cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 2448)
 
@@ -39,8 +39,11 @@ def get_image(folder="."):
         result, image = cam.read()
 
     result, image = cam.read() 
-
-    filename = f"image_{datetime.today().strftime('%Y-%m-%d_%H:%M:%S')}"
+    if temp_image:
+        filename = "temp_image"
+    
+    else:
+        filename = f"image_{datetime.today().strftime('%Y-%m-%d_%H:%M:%S')}"
 
     if result:
         print(f"writing to folder:{folder}{filename}.jpg")
@@ -194,3 +197,46 @@ def capture_image_from_device(device_path):
         print(f"Saved image: {filename}")
     else:
         print(f"Failed to capture image from {device_path}")
+
+def process_images_routine(input_folder,output_folder):
+    # this is going to do some processing of taken images
+    # import cv2
+    # import os
+
+    # input_folder = "path_to_your_images"
+    # output_folder = "path_to_compressed_images"
+
+    crop_factor = 0.1
+
+    os.makedirs(output_folder, exist_ok=True)
+
+    for filename in os.listdir(input_folder):
+        if filename.endswith((".jpg", ".jpeg", ".png")):
+            img_path = os.path.join(input_folder, filename)
+            img = cv2.imread(img_path)
+
+            # RESIZE TO SQUARE
+            # Get dimensions and determine the square crop
+            height, width = img.shape[:2]
+            min_dim = min(height, width)
+            start_x = (width - min_dim) // 2
+            start_y = (height - min_dim) // 2
+            square_cropped_img = img[start_y:start_y + min_dim, start_x:start_x + min_dim]
+            
+            # CROP BY A FACTOR
+            height, width = square_cropped_img.shape[:2]
+            crop_x = int(width * crop_factor)
+            crop_y = int(height * crop_factor)
+            # Crop the image (remove crop_factor portions from all sides)
+            cropped_img = img[crop_y:height - crop_y, crop_x:width - crop_x]
+            
+            # Resize to YOLO-compatible dimensions after cropping
+            resized_img = cv2.resize(cropped_img, (640, 640))            
+
+            # resized_img = cv2.resize(square_cropped_img, (640, 640))  # Resize to YOLO dimensions
+
+
+            compressed_img_path = os.path.join(output_folder, filename)
+            cv2.imwrite(compressed_img_path, resized_img, [cv2.IMWRITE_JPEG_QUALITY, 100])  # Compress and save
+        # input("one_done")
+

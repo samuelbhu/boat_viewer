@@ -1,9 +1,26 @@
 from ultralytics import YOLO
 import os
 
-import fiftyone as fo
-import fiftyone.zoo as foz
+
 import warnings
+
+def check_for_boat(model_name,filename,boat_class):
+    model = YOLO(model_name)
+    # predictions = {}
+    results = model(filename,verbose=False)
+    for result in results:
+        class_ids = result.boxes.cls.cpu().numpy().astype(int)
+        predictions = set([int(id) for id in class_ids])
+        print(f"predictions:{predictions}")
+        if boat_class in predictions:
+            return True
+        else:
+            return False
+        # class_names = model.names 
+        # detected_objects = [class_names[c] for c in class_ids]
+        # if
+
+
 
 
 
@@ -103,8 +120,9 @@ def compare_and_report(truths,predictions,target_class_id,max_images):
 
     return report
 
-def get_dataset(dataset_name, fraction, split, split_size):
-
+def get_dataset(dataset_name, fraction):
+    import fiftyone as fo
+    import fiftyone.zoo as foz
 
     from ultralytics.utils import LOGGER, SETTINGS, Path, get_ubuntu_version, is_ubuntu
     from ultralytics.utils.checks import check_requirements, check_version
