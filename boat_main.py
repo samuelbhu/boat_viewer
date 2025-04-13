@@ -20,6 +20,9 @@ DATASET_YAML = "open_images_mini.yaml"
 MAX_IMAGES = 100 #len(os.listdir(DATASET_PATH))
 MODEL_NAME = "yolov8n-oiv7.pt"
 
+CAPTURE_DATASET_TIME = 180  # minutes
+
+CAPTURE_INTERVAL= 8 # seconds
 
 def main(args):
     # define main function
@@ -34,7 +37,9 @@ def main(args):
         # one_image_routine(args)
 
     if args.one_image:
+        print(f"PRE CAPTURE TIME:{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}")
         camera.get_image()
+        print(f"POST CAPTURE TIME:{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}")
 
     elif args.capture_images:
         capture_images()
@@ -85,6 +90,7 @@ def model_testing_routine(save_report):
     
 def capture_images():
     pass ## TODO: Put the correct image here
+    camera.get_many_images(CAPTURE_DATASET_TIME,f"./datasets/freeland_{CAPTURE_DATASET_TIME}_min_{datetime.today().strftime('%Y_%m_%d__%H_%M')}/",CAPTURE_INTERVAL)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Python script boilerplate.")

@@ -2,53 +2,71 @@ import cv2
 import os
 import glob
 import subprocess
+import time
+from datetime import datetime,timedelta
 
-def get_image():
-    cam_port=1
-    small_img = True
-    # cam = cv2.VideoCapture(cam_port,cv2.CAP_V4L2)
+WARMUP_FRAMES=3
+IMAGE_SIZE = "FULL" # SMALL,MEDIUM,FULL
+
+def get_image(folder="."):
+
+
+    cam_port=0
+
     cam = cv2.VideoCapture(cam_port,cv2.CAP_ANY)
-    
-    max_width, max_height = get_max_resolution(cam)
-    print("maxwidth:%d, height:%d"%(max_width,max_height))
-    if(small_img):
-        # save roughly a quarter size of image
-        cam.set(cv2.CAP_PROP_FRAME_WIDTH, 800)  # Set width
-        cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 600)  # Set height
-        # cam.set(cv2.CAP_PROP_AUTO_EXPOSURE, 3.0)
-        cam.set(cv2.CAP_PROP_BRIGHTNESS,30)
+    if(IMAGE_SIZE=="SMALL"):
+        # save small image
+        cam.set(cv2.CAP_PROP_FRAME_WIDTH, 800)  
+        cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 600) 
+    elif(IMAGE_SIZE=="MEDIUM"): # 
+        cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1600)  
+        cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1200) 
+        cam.set(cv2.CAP_PROP_BRIGHTNESS,35)
 
-    else:
+    elif(IMAGE_SIZE=="FULL"):
         cam.set(cv2.CAP_PROP_FRAME_WIDTH, 3264)
         cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 2448)
-        # cam.set(cv2.CAP_PROP_BRIGHTNESS, 1.0)
-        # cam.set(cv2.CAP_PROP_CONTRAST, 1.0)
 
-    set_test = True
-    if set_test:
-        set_item = (cv2.CAP_PROP_FOURCC, 2)
-
-        # cam.set(set_item[0],set_item[1])
-        print(cam.get(set_item[0]))
-
-
+        # cam.set(cv2.CAP_PROP_BRIGHTNESS,10)
     
-
-    result, image = cam.read() 
-    result, image = cam.read() 
-    result, image = cam.read() 
-    result, image = cam.read() 
-    result, image = cam.read() 
-    result, image = cam.read() 
-    result, image = cam.read() 
-    result, image = cam.read() 
+    # OPTIONAL CAMERA SETTINGS
+    # cam.set(cv2.CAP_PROP_BRIGHTNESS, 10.0)
+    # cam.set(cv2.CAP_PROP_CONTRAST, 15.0)
+    # cam.set(cv2.CAP_PROP_AUTO_EXPOSURE, 3.0)
 
 
+    for _ in range(WARMUP_FRAMES):
+        result, image = cam.read()
+
+    result, image = cam.read() 
+
+    filename = f"image_{datetime.today().strftime('%Y-%m-%d_%H:%M:%S')}"
 
     if result:
-        cv2.imwrite("single_captured_image.jpg", image)  # Save the captured image
+        print(f"writing to folder:{folder}{filename}.jpg")
+        cv2.imwrite(f"{folder}/{filename}.jpg", image)  # Save the captured image
     else:
         print("Error: Failed to capture image.")
+def get_many_images(runtime_mins,folder,interval_secs):
+    # runtime_mins:  how many minutes to run image capture 
+    # capture_rate_secs:  how many seconds per capture
+    print(f"folder{folder}")
+    os.makedirs(os.path.dirname(folder), exist_ok=True)
+
+    duration = timedelta(minutes=runtime_mins)
+    start_time = datetime.now()
+    end_time = start_time + duration    
+    
+    while datetime.now() < end_time:
+        capture_start = datetime.now()
+        get_image(folder)
+        capture_end = datetime.now()
+        # Your image capture or routine goes here
+        print("Captured image at", capture_end)
+        capture_duration = (capture_end - capture_start).total_seconds()
+        # Wait for 7.65 seconds (or your calculated interval)
+        time.sleep(max(0,interval_secs-capture_duration))
+
 
 def get_image_all_apis():
     api_list = [
