@@ -6,7 +6,10 @@ import sys
 import camera
 import utils.boat_viewer_utils as utils
 import os
-from datetime import datetime
+# from datetime import datetime
+from datetime import datetime, timezone
+import ephem
+import time
 # handles 
 
     # import necessary files and other modules
@@ -62,8 +65,8 @@ MODEL_NAME = "yolov8n.pt"
 CAPTURE_DATASET_TIME = 180  # minutes
 CAPTURE_INTERVAL= 8 # seconds
 
-CAPTURE_BOAT_TIME = .5 #minutes
-CAPTURE_BOAT_INTERVAL= 5 # seconds
+CAPTURE_BOAT_TIME = 30/60 #minutes
+CAPTURE_BOAT_INTERVAL= 10 # seconds
 
 
 def main(args):
@@ -88,7 +91,10 @@ def main(args):
 
     elif args.boat_detector:
         while(1):
-            detect_boats()
+            if not civil_twilight():
+                detect_boats(args.upload_images)
+            else:
+                time.sleep(30)
     # camera.get_image_all_apis()
     # camera.get_image_all_devices()
 
@@ -107,7 +113,7 @@ def main(args):
 
     print("DONE")
 
-def detect_boats():
+def detect_boats(upload_to_cloud):
     # pass
     # TODO: this will be a daemon that runs on pi and does it ALL
     # ---- take pictures, detect boats, and upload to AWS ----
@@ -115,7 +121,7 @@ def detect_boats():
     boat_detected = utils.check_for_boat(MODEL_NAME, "temp_image.jpg",DATASET_BOAT_CLASS)
     if boat_detected:
         print("DETECTED BOAT!!")
-        camera.get_many_images(CAPTURE_BOAT_TIME,f"./saved_boats/freeland_{datetime.today().strftime('%Y_%m_%d')}/",CAPTURE_BOAT_INTERVAL)
+        camera.get_many_images(CAPTURE_BOAT_TIME,f"./saved_boats/freeland_{datetime.today().strftime('%Y_%m_%d')}/",CAPTURE_BOAT_INTERVAL,upload_to_cloud)
     
 
 def model_testing_routine(save_report):
@@ -148,6 +154,45 @@ def capture_images():
     pass ## TODO: Put the correct image here
     camera.get_many_images(CAPTURE_DATASET_TIME,f"./datasets/freeland_{CAPTURE_DATASET_TIME}_min_{datetime.today().strftime('%Y_%m_%d__%H_%M')}/",CAPTURE_INTERVAL)
 
+def civil_twilight():
+
+
+    # Set observer location (Boise, Idaho)
+    observer = ephem.Observer()
+    observer.lat = '47.92'  # Latitude for Freeland
+    observer.lon = '-122.585'  # Longitude for Freeland
+    observer.elev = 0  # Elevation in meters
+
+    # Get today's date and set observer time
+    observer.date = datetime.now(timezone.utc)
+
+
+
+
+    # Calculate civil twilight times
+    sun = ephem.Sun()
+    morning_twilight = observer.previous_rising(sun, use_center=True)
+    evening_twilight = observer.next_setting(sun, use_center=True)
+    # Convert ephem.Date to datetime.datetime
+    # Convert ephem.Date to datetime and make it timezone-aware
+    def convert_to_utc_aware(ephem_date):
+        dt = ephem.localtime(ephem_date)  # Convert ephem.Date to naive datetime
+        return dt.replace(tzinfo=timezone.utc)  # Make it UTC-aware
+
+    morning_twilight_dt = convert_to_utc_aware(morning_twilight)
+    evening_twilight_dt = convert_to_utc_aware(evening_twilight)
+
+    # Get current UTC time
+    current_time = datetime.now(timezone.utc)
+
+    # Check if current time is outside civil twilight
+    if current_time < morning_twilight_dt or current_time > evening_twilight_dt:
+        # print("It's NOT civil twilight. Triggering action...")
+        return False
+        # Add your action here
+    else:
+        # print("It's civil twilight. No action needed.")
+        return True
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Python script boilerplate.")
 
@@ -165,6 +210,8 @@ if __name__ == "__main__":
 
     # parser.add_argument('--verbose', action='store_true', help='DEBUG: Enable verbose output')
     parser.add_argument('--save_report', action='store_true', help='add report to model_test_report.txt')
+    parser.add_argument("-u",'--upload_images', action='store_true', help='upload boat images and delete if upload is successful')
+    # parser.add_argument("-e",'--daytime_', action='store_true', help='run only when not in civil twilight')
     
 
     args = parser.parse_args()
@@ -174,3 +221,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\nProcess interrupted by user.")
         sys.exit(1)
+
