@@ -4,6 +4,7 @@ import glob
 import subprocess
 import time
 from datetime import datetime,timedelta
+import utils.boat_viewer_utils as utils
 
 WARMUP_FRAMES=3
 
@@ -50,7 +51,8 @@ def get_image(folder=".",image_size="FULL",temp_image=False):
         cv2.imwrite(f"{folder}/{filename}.jpg", image)  # Save the captured image
     else:
         print("Error: Failed to capture image.")
-def get_many_images(runtime_mins,folder,interval_secs):
+    return filename
+def get_many_images(runtime_mins,folder,interval_secs,upload):
     # runtime_mins:  how many minutes to run image capture 
     # capture_rate_secs:  how many seconds per capture
     print(f"folder{folder}")
@@ -62,7 +64,13 @@ def get_many_images(runtime_mins,folder,interval_secs):
     
     while datetime.now() < end_time:
         capture_start = datetime.now()
-        get_image(folder)
+        filename = get_image(folder,image_size="MEDIUM")
+        if upload:
+            if utils.upload_image(f"{folder}{filename}.jpg"):
+                utils.delete_image(f"{folder}{filename}.jpg")
+            else:
+                print(f"Did not successfully upload{filename}")
+
         capture_end = datetime.now()
         # Your image capture or routine goes here
         print("Captured image at", capture_end)

@@ -1,6 +1,6 @@
 from ultralytics import YOLO
 import os
-
+import requests
 
 import warnings
 
@@ -160,3 +160,22 @@ def get_dataset(dataset_name, fraction):
             classes=classes,
             # overwrite=train,
         )
+def upload_image(filename):
+
+    url = "***REMOVED***api/upload-image"
+    # Open the image file in binary mode
+    with open(filename, "rb") as image_file:
+        files = {"image": image_file}
+        data = {
+            "title": "Boat Detected",
+            "description": "Freeland Mutiny Bay Capture"
+        }
+
+        response = requests.post(url, files=files, data=data, verify=False)
+
+    # Print response
+    print(response.status_code, response.text)
+    return response.status_code == 200
+
+def delete_image(filename):
+    print("Deleting Images Soon")
