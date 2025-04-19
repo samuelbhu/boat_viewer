@@ -91,7 +91,7 @@ def main(args):
 
     elif args.boat_detector:
         while(1):
-            if not is_daylight():
+            if is_daylight():
                 detect_boats(args.upload_images)
             else:
                 time.sleep(30)
