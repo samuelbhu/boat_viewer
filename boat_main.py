@@ -91,7 +91,7 @@ def main(args):
 
     elif args.boat_detector:
         while(1):
-            if not civil_twilight():
+            if not is_daylight():
                 detect_boats(args.upload_images)
             else:
                 time.sleep(30)
@@ -146,53 +146,29 @@ def model_testing_routine(save_report):
             report_file.write(f"{key}:{value}\n")
         report_file.write("#### END MODEL REPORT ####\n")
 
-
-    
-
-    
+ 
 def capture_images():
     pass ## TODO: Put the correct image here
     camera.get_many_images(CAPTURE_DATASET_TIME,f"./datasets/freeland_{CAPTURE_DATASET_TIME}_min_{datetime.today().strftime('%Y_%m_%d__%H_%M')}/",CAPTURE_INTERVAL)
 
-def civil_twilight():
+
+def is_daylight():
+    FREELAND_LAT = '47.92'
+    FREELAND_LON = '-122.585'
 
 
-    # Set observer location (Boise, Idaho)
+    # Set observer location (Freeland, WA)
     observer = ephem.Observer()
-    observer.lat = '47.92'  # Latitude for Freeland
-    observer.lon = '-122.585'  # Longitude for Freeland
-    observer.elev = 0  # Elevation in meters
+    observer.lat = FREELAND_LAT
+    observer.lon = FREELAND_LON
+    observer.date = datetime.now(timezone.utc)  # current UTC time
 
-    # Get today's date and set observer time
-    observer.date = datetime.now(timezone.utc)
+    sun = ephem.Sun(observer)
+    sun_altitude = sun.alt  # Altitude of the sun in radians
+
+    return sun_altitude > 0 
 
 
-
-
-    # Calculate civil twilight times
-    sun = ephem.Sun()
-    morning_twilight = observer.previous_rising(sun, use_center=True)
-    evening_twilight = observer.next_setting(sun, use_center=True)
-    # Convert ephem.Date to datetime.datetime
-    # Convert ephem.Date to datetime and make it timezone-aware
-    def convert_to_utc_aware(ephem_date):
-        dt = ephem.localtime(ephem_date)  # Convert ephem.Date to naive datetime
-        return dt.replace(tzinfo=timezone.utc)  # Make it UTC-aware
-
-    morning_twilight_dt = convert_to_utc_aware(morning_twilight)
-    evening_twilight_dt = convert_to_utc_aware(evening_twilight)
-
-    # Get current UTC time
-    current_time = datetime.now(timezone.utc)
-
-    # Check if current time is outside civil twilight
-    if current_time < morning_twilight_dt or current_time > evening_twilight_dt:
-        # print("It's NOT civil twilight. Triggering action...")
-        return False
-        # Add your action here
-    else:
-        # print("It's civil twilight. No action needed.")
-        return True
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Python script boilerplate.")
 
