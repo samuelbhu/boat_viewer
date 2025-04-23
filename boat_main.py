@@ -6,7 +6,7 @@ import sys
 import camera
 import utils.boat_viewer_utils as utils
 import os
-# from datetime import datetime
+
 from datetime import datetime, timezone
 import ephem
 import time
@@ -58,8 +58,6 @@ if MAX_IMAGES == -1:
         print("Warning: Dataset Not Created, setting default MAX IMAGES TO 100")
         MAX_IMAGES = 100
 
-# MODEL_NAME = "yolov8x.pt"
-# MODEL_NAME = "yolov8n-oiv7.pt"
 MODEL_NAME = "yolov8n.pt"
 
 CAPTURE_DATASET_TIME = 180  # minutes
@@ -112,6 +110,7 @@ def main(args):
         print("Error, nothing to do")
 
     print("DONE")
+
 
 def detect_boats(upload_to_cloud):
     # pass
