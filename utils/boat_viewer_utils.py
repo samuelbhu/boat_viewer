@@ -162,7 +162,7 @@ def get_dataset(dataset_name, fraction,split,split_size):
         )
 def upload_image(filename):
 
-    url = "***REMOVED***api/upload-image"
+    url = "WEBSITE URL"
     # Open the image file in binary mode
     with open(filename, "rb") as image_file:
         files = {"image": image_file}
