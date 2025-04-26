@@ -120,7 +120,7 @@ def compare_and_report(truths,predictions,target_class_id,max_images):
 
     return report
 
-def get_dataset(dataset_name, fraction):
+def get_dataset(dataset_name, fraction,split,split_size):
     import fiftyone as fo
     import fiftyone.zoo as foz
 
