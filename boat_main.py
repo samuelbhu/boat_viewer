@@ -16,7 +16,6 @@ import time
     # process arguments for program
     # call appropiate 
 
-# DATASET_PATH = "/Users/samuel/git/boat_viewer/datasets/open-images-v7/images/train"
 
 #### CONFIGURATIONS ####
 
