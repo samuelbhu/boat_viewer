@@ -1,7 +1,7 @@
 # boat_viewer
 ## Program to Automatically Detect and Photograph Images from a Camera and Save Them
 ---
-Program run on the raspberry Pi
+Program Written to run on a Raspberry Pi
 ### Summary
 This is the software for a boat photography project. The aim is to snap pictures of boats when they pass in front of a video camera. 
 The software was built to run on the Raspberry Pi 5, but it has also been tested on MacOS and the machine learning components work on WSL.
