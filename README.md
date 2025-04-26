@@ -1,5 +1,5 @@
 # boat_viewer
-## Program to capture images from a boat and upload them
+## Program to Automatically Detect and Photograph Images from a Camera and Save Them
 ---
 Program run on the raspberry Pi
 ### Summary
