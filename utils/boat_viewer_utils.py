@@ -1,6 +1,7 @@
 from ultralytics import YOLO
 import os
 import requests
+import time
 
 import warnings
 
@@ -20,13 +21,19 @@ def check_for_boat(model_name,filename,boat_class):
         # detected_objects = [class_names[c] for c in class_ids]
         # if
 
+def get_model_info(name):
+    model = YOLO(name)
+    return model.info() 
 
 
 
-
-def get_predictions(model_name,dataset_path,max_images):
+def get_predictions(model_name,dataset_path,max_images,boat_class=None):
     model = YOLO(model_name)
+    if boat_class:
+        if model.names[boat_class] != "boat":
+            raise ValueError(f"ERROR: Boat Class Mismatch on model {model_name}, which dataset was used for training?")
     counter = 0
+    total_model_time = 0.0
     predictions = {}
     for filename in sorted(os.listdir(dataset_path)):
         # input(f"filename:{dataset_path}{filename}")
@@ -38,7 +45,10 @@ def get_predictions(model_name,dataset_path,max_images):
             break
         full_path = os.path.join(dataset_path, filename)
         if os.path.isfile(full_path):
+            yolo_start = time.time()
             results = model(full_path,verbose=False)
+            yolo_end = time.time()
+            total_model_time = (yolo_end-yolo_start) + total_model_time
             for result in results:
                 class_ids = result.boxes.cls.cpu().numpy().astype(int)
                 predictions[filename.split(".")[0]] = set([int(id) for id in class_ids])
@@ -49,7 +59,8 @@ def get_predictions(model_name,dataset_path,max_images):
                 # unique_objects = list(set(detected_objects)) TODO:delete?
 
                 counter+=1
-    return predictions
+    
+    return predictions,total_model_time/counter
 
 def extract_first_column_integers(filename):
     # print(f"filename:{filename}")
@@ -57,15 +68,15 @@ def extract_first_column_integers(filename):
         return {int(line.split()[0]) for line in file if line.strip()}
 
 
-def get_truths(dataset_path,max_images):
-    print(f"dataset path: {dataset_path}")
+def get_truths(dataset_truths_path,max_images):
+    print(f"dataset path: {dataset_truths_path}")
     print(f"max_images: {max_images}")
     counter = 0
     truths = {}
-    for filename in sorted(os.listdir(dataset_path)):
+    for filename in sorted(os.listdir(dataset_truths_path)):
         if counter >= max_images:
             break
-        full_path = os.path.join(dataset_path, filename)
+        full_path = os.path.join(dataset_truths_path, filename)
         if os.path.isfile(full_path):
             class_ids = extract_first_column_integers(full_path)
             truths[filename.split(".")[0]] = class_ids
@@ -73,7 +84,7 @@ def get_truths(dataset_path,max_images):
     return truths
 
 
-def compare_and_report(truths,predictions,target_class_id,max_images):
+def compare_and_report(truths,predictions,target_class_id,max_images,brief=False):
     total_images = max_images
     true_images_with_target = 0
     true_positives = 0
@@ -91,14 +102,17 @@ def compare_and_report(truths,predictions,target_class_id,max_images):
             true_images_with_target +=1
             if target_class_id in predictions[image]:
                 true_positives += 1
-                true_positives_arr.append(image)
+                if not brief:
+                    true_positives_arr.append(image)
             else:
                 false_negatives += 1
-                false_negatives_arr.append(image)
+                if not brief:
+                    false_negatives_arr.append(image)
         else: # no boat in truth
             if target_class_id in predictions[image]:
                 false_positives +=1
-                false_positives_arr.append(image)
+                if not brief:
+                    false_positives_arr.append(image)
             else:
                 true_negatives +=1
 
@@ -112,11 +126,13 @@ def compare_and_report(truths,predictions,target_class_id,max_images):
     report["total_images"] = total_images
     report["true_images_with_target"] = true_images_with_target
     report["true_positives"] = true_positives
-    report["true_positives_arr"] = true_positives_arr
-    report["false_negatives"] = false_negatives
-    report["false_negatives_arr"] = false_negatives_arr
-    report["false_positives_arr"] = false_positives_arr
+    report["false_positives"] = false_positives
     report["true_negatives"] = true_negatives
+    report["false_negatives"] = false_negatives
+    if not brief:
+        report["false_negatives_arr"] = false_negatives_arr
+        report["true_positives_arr"] = true_positives_arr
+        report["false_positives_arr"] = false_positives_arr
 
     return report
 
