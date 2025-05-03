@@ -158,7 +158,7 @@ def multi_model_testing():
     report_file = open("multi_model_test_report.txt", 'a')
     report_file.write("model_name,timestamp,dataset_name,dataset_split,dataset_fraction,num_images,boat_class,TP,FP,TN,FN,per_image_time\n")
     for dataset in datasets:
-        dataset_path = f"./datasets/yolo/{dataset["name"]}_{str(dataset["fraction"])}/images/{dataset["split"]}/"
+        dataset_path = f'./datasets/yolo/{dataset["name"]}_{str(dataset["fraction"])}/images/{dataset["split"]}/'
         max_images = int(dataset["split_size"]*dataset["fraction"])
         if not os.path.isdir(dataset_path):
             # acquire dataset
