@@ -8,12 +8,12 @@ import utils.boat_viewer_utils as utils
 
 WARMUP_FRAMES=3
 
-def get_image(folder=".",image_size="FULL",temp_image=False):
+def get_image(cam=None,folder=".",image_size="FULL",temp_image=False):
 
-
-    cam_port=1
-
-    cam = cv2.VideoCapture(cam_port,cv2.CAP_ANY)
+    if not cam:
+        cam_port=1
+        cam = cv2.VideoCapture(cam_port,cv2.CAP_ANY)
+        cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
 
     if not cam.isOpened():
         print(f"Error: Cannot open camera at index {cam_port}")
@@ -42,7 +42,8 @@ def get_image(folder=".",image_size="FULL",temp_image=False):
 
 
     for _ in range(WARMUP_FRAMES):
-        result, image = cam.read()
+        cam.read()
+        time.sleep(0.1)
 
     result, image = cam.read() 
     if temp_image:
@@ -57,7 +58,9 @@ def get_image(folder=".",image_size="FULL",temp_image=False):
     else:
         print("Error: Failed to capture image.")
     return filename
-def get_many_images(runtime_mins,folder,interval_secs,upload):
+
+
+def get_many_images(camera_obj, runtime_mins,folder,interval_secs,upload):
     # runtime_mins:  how many minutes to run image capture 
     # capture_rate_secs:  how many seconds per capture
     print(f"folder{folder}")
@@ -69,7 +72,12 @@ def get_many_images(runtime_mins,folder,interval_secs,upload):
     
     while datetime.now() < end_time:
         capture_start = datetime.now()
-        filename = get_image(folder,image_size="MEDIUM")
+        filename = get_image(
+            cam=camera_obj, 
+            folder=folder,
+            image_size="MEDIUM"
+        
+        )
         if upload:
             if utils.upload_image(f"{folder}{filename}.jpg"):
                 utils.delete_image(f"{folder}{filename}.jpg")

@@ -2,6 +2,7 @@
 ## !/home/boat-watcher/boatwatcher/boat_viewer/venv_boat_viewer/bin/python3
 # This file is the entry point
 import argparse
+import cv2
 import sys
 import camera
 import utils.boat_viewer_utils as utils
@@ -78,9 +79,16 @@ def main(args):
     # if args.one_image: 
         # one_image_routine(args)
 
+    cam_port=1
+    cam = cv2.VideoCapture(cam_port,cv2.CAP_ANY)
+    cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+
     if args.one_image:
         print(f"PRE CAPTURE TIME:{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}")
-        camera.get_image(image_size="FULL")
+        camera.get_image(
+            cam=cam, 
+            image_size="FULL"
+        )
         print(f"POST CAPTURE TIME:{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}")
 
     elif args.capture_images:
@@ -89,7 +97,10 @@ def main(args):
     elif args.boat_detector:
         while(1):
             if is_daylight():
-                detect_boats(args.upload_images)
+                detect_boats(
+                    camera_obj=cam, 
+                    upload_to_cloud=args.upload_images
+                )
             else:
                 time.sleep(30)
     # camera.get_image_all_apis()
@@ -114,11 +125,15 @@ def main(args):
     print("DONE")
 
 
-def detect_boats(upload_to_cloud):
+def detect_boats(camera_obj, upload_to_cloud):
     # pass
     # TODO: this will be a daemon that runs on pi and does it ALL
     # ---- take pictures, detect boats, and upload to AWS ----
-    camera.get_image(image_size="MEDIUM",temp_image=True)
+    camera.get_image(
+        cam=camera_obj, 
+        image_size="MEDIUM",
+        temp_image=True
+    )
     boat_detected = utils.check_for_boat(MODEL_NAME, "temp_image.jpg",DATASET_BOAT_CLASS)
     if boat_detected:
         print("DETECTED BOAT!!")
@@ -227,9 +242,15 @@ def model_testing_routine(save_report):
         report_file.write("#### END MODEL REPORT ####\n")
 
  
-def capture_images():
+def capture_images(camera_obj):
     pass ## TODO: Put the correct image here
-    camera.get_many_images(CAPTURE_DATASET_TIME,f"./datasets/freeland_{CAPTURE_DATASET_TIME}_min_{datetime.today().strftime('%Y_%m_%d__%H_%M')}/",CAPTURE_INTERVAL)
+    camera.get_many_images(
+        camera_obj=camera_obj, 
+        runtime_mins=CAPTURE_DATASET_TIME, 
+        folder=f"./datasets/freeland_{CAPTURE_DATASET_TIME}_min_{datetime.today().strftime('%Y_%m_%d__%H_%M')}/", 
+        interval_secs=CAPTURE_INTERVAL,
+        upload=False,
+    )
 
 
 def is_daylight():
