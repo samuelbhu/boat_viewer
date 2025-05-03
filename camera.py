@@ -11,9 +11,14 @@ WARMUP_FRAMES=3
 def get_image(folder=".",image_size="FULL",temp_image=False):
 
 
-    cam_port=0
+    cam_port=1
 
     cam = cv2.VideoCapture(cam_port,cv2.CAP_ANY)
+
+    if not cam.isOpened():
+        print(f"Error: Cannot open camera at index {cam_port}")
+        return None
+
     if(image_size=="SMALL"):
         # save small image
         cam.set(cv2.CAP_PROP_FRAME_WIDTH, 800)  
