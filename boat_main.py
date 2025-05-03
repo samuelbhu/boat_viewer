@@ -182,10 +182,10 @@ def multi_model_testing():
                 f"{dataset['fraction']},"+\
                 f"{max_images},"+\
                 f"{dataset['boat_class']},"+\
-                f"{report["true_positives"]},"+\
-                f"{report["false_positives"]},"+\
-                f"{report["true_negatives"]},"+\
-                f"{report["false_negatives"]},"+\
+                f"{report['true_positives']},"+\
+                f"{report['false_positives']},"+\
+                f"{report['true_negatives']},"+\
+                f"{report['false_negatives']},"+\
                 f"{average_time}\n")
 
 
