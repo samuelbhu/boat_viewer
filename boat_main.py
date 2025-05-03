@@ -57,7 +57,7 @@ if MAX_IMAGES == -1:
         print("Warning: Dataset Not Created, setting default MAX IMAGES TO 100")
         MAX_IMAGES = 100
 
-MODEL_NAME = "yolov8n.pt"
+MODEL_NAME = "yolov5xu.pt"
 
 CAPTURE_DATASET_TIME = 180  # minutes
 CAPTURE_INTERVAL= 8 # seconds
