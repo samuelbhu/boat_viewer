@@ -168,7 +168,7 @@ def multi_model_testing():
                 return
 
         for model in models:
-            dataset_truth_path = f"./datasets/yolo/{dataset["name"]}_{str(dataset["fraction"])}/labels/{dataset["split"]}/"
+            dataset_truth_path = f'./datasets/yolo/{dataset["name"]}_{str(dataset["fraction"])}/labels/{dataset["split"]}/'
             predictions,average_time = utils.get_predictions(model,dataset_path,max_images,dataset["boat_class"])
             truths  = utils.get_truths(dataset_truth_path,max_images)
             report = utils.compare_and_report(truths,predictions,dataset["boat_class"],max_images,brief=True)
